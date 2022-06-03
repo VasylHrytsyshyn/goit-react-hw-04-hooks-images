@@ -3,11 +3,7 @@ import styles from './Modal.module.css'
 //рефакторинг проведено
 const Modal = ({ imageURL, alt, onClose }) => {
   
-  const handeleKeyDown = e => {
-    if (e.code === 'Escape') {
-      onClose();
-    }
-  };
+  
   
   const handeleBackdropClick = e => {
     if (e.currentTarget === e.target) {
@@ -16,9 +12,14 @@ const Modal = ({ imageURL, alt, onClose }) => {
   };
    
   useEffect(() => {
+    const handeleKeyDown = e => {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+    };
     window.addEventListener('keydown', handeleKeyDown);
     return () => { window.removeEventListener('keydown', handeleKeyDown); }
-  }, [])
+  }, [onClose]);
 
 
 

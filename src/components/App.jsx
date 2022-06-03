@@ -12,10 +12,10 @@ const App = () => {
   const [page, setPage] = useState(1);
   const [pictures, setPictures] = useState([]);
   const [loader, setLoader] = useState(false);
-  const [loadMore, setLoadMore] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [largeImageURL, setLargeImageURL] = useState('');
   const [tags, setTags] = useState('');
+  const [total, setTotal] = useState(0)
 
   useEffect(() => {
     if (query !== '') {
@@ -23,14 +23,8 @@ const App = () => {
     
       getPictures(query, page).then(r => {
         setPictures(pictures => [...pictures, ...r.hits]);
-
+        setTotal(r.total)
         setLoader(false);
-        if (r.total === 0) {
-          return console.log('Нічого немає');// додати нотифікашку
-        };
-        if (r.total > 12 && (r.total - 12) > pictures.length) {
-          setLoadMore(true);
-        } else { setLoadMore(false) };
       })
     }
     
@@ -64,7 +58,7 @@ const App = () => {
 
       {loader && <ThreeDots color="#00BFFF" height={80} width={80} />}
 
-      {loadMore && <Button onClickLoadMore={onClickLoadMore} />}
+      { (total > 12 && (total - 12) > pictures.length) && <Button onClickLoadMore={onClickLoadMore} />}
 
       {showModal && <Modal imageURL={largeImageURL} alt={tags} onClose={closeModal} />}
         
