@@ -18,23 +18,23 @@ const App = () => {
   const [tags, setTags] = useState('');
 
   useEffect(() => {
-    if (query === '') {
-      return
-    }
-    setLoader(true);
+    if (query !== '') {
+      setLoader(true);
     
-    getPictures(query, page).then(r => {
-      setPictures(pictures => [...pictures, ...r.hits]);
+      getPictures(query, page).then(r => {
+        setPictures(pictures => [...pictures, ...r.hits]);
 
-      setLoader(false);
-      if (r.total === 0) {
-        return console.log('Нічого немає');// додати нотифікашку
-      };
-      if (r.total > 12 && (r.total - 12) > pictures.length) {
-        setLoadMore(true);
-      } else { setLoadMore(false) };
-    })
-  }, [page, query])
+        setLoader(false);
+        if (r.total === 0) {
+          return console.log('Нічого немає');// додати нотифікашку
+        };
+        if (r.total > 12 && (r.total - 12) > pictures.length) {
+          setLoadMore(true);
+        } else { setLoadMore(false) };
+      })
+    }
+    
+  }, [page, query]);
 
   const handlFormSubmit = value => {
     setQuery(value);
