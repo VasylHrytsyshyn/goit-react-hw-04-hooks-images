@@ -1,91 +1,74 @@
-import { Component } from "react";
+import { useState, useEffect } from "react";
 import { ThreeDots } from 'react-loader-spinner';
 
-import {getPictures} from '../services/api'
+import { getPictures } from '../services/api';
 import Searchbar from "./Searchbar";
 import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Modal from './Modal'
 
-class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    pictures: [],
-    loader: false,
-    loadMore: false,
-    showModal: false,
-    largeImageURL: '',
-    tags: '',
-  }
+const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [pictures, setPictures] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [tags, setTags] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query, page, pictures } = this.state;
-
-    if (query !== prevState.query || page !== prevState.page) {
-      this.setState({ loader: true });
-      getPictures(query, page).then(r => {
-        // this.setState({ loader: true });
-        this.setState(prevState => ({ pictures: [...prevState.pictures, ...r.hits], loader: false}));
-
-        if (r.total === 0) {
-          return console.log('Нічого немає');// додати нотифікашку
-        }
-        //--------------??????
-        if (r.total > 12 && (r.total - 12) > pictures.length ) {
-          this.setState({loadMore: true})
-        }  else { this.setState({ loadMore: false }) };
-
-      })
+  useEffect(() => {
+    if (query === '') {
+      return
     }
+    setLoader(true);
+    
+    getPictures(query, page).then(r => {
+      setPictures(pictures => [...pictures, ...r.hits]);
 
-    // this.setState({ loader: false });
-  };
-
-  handlFormSubmit = value => {
-    this.setState({ query: value, page: 1, pictures: []});
-  };
-
-  onClickLoadMore = () => {
-    this.setState(prevState => {
-      return {
-        page: prevState.page + 1,
+      setLoader(false);
+      if (r.total === 0) {
+        return console.log('Нічого немає');// додати нотифікашку
       };
-    });
+      if (r.total > 12 && (r.total - 12) > pictures.length) {
+        setLoadMore(true);
+      } else { setLoadMore(false) };
+    })
+  }, [page, query])
+
+  const handlFormSubmit = value => {
+    setQuery(value);
+    setPage(1);
+    setPictures([]);
   };
 
-  handleClickImg = (largeImageURL, tags) => {
-    this.setState({
-      largeImageURL,
-      tags,
-      showModal: true,
-    });
+  const onClickLoadMore = () => {
+    setPage(page => page + 1)
   };
 
-  closeModal = () => {
-    this.setState({
-      showModal: false,
-    });
+  const handleClickImg = (largeImageURL, tags) => {
+    setLargeImageURL(largeImageURL);
+    setTags(tags);
+    setShowModal(true);
   };
 
-  render() {
-    const { loader, loadMore, showModal, largeImageURL, tags } = this.state;
-    return (
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  return (
     <>
-      <Searchbar onSubmit={this.handlFormSubmit} />
-      
-      
+      <Searchbar onSubmit={handlFormSubmit} />
+             
+      {pictures.length > 0 && <ImageGallery pictures={pictures} handleClickImg={handleClickImg} />}
+
+      {loader && <ThreeDots color="#00BFFF" height={80} width={80} />}
+
+      {loadMore && <Button onClickLoadMore={onClickLoadMore} />}
+
+      {showModal && <Modal imageURL={largeImageURL} alt={tags} onClose={closeModal} />}
         
-      {this.state.pictures.length > 0 && <ImageGallery pictures={this.state.pictures} handleClickImg={this.handleClickImg} />}
-
-      {loader && <ThreeDots color="#00BFFF" height={80} width={80} />}  
-
-      {loadMore && <Button onClickLoadMore={this.onClickLoadMore} />}
-
-      {showModal && <Modal imageURL={largeImageURL} alt={tags} onClose={ this.closeModal }/>}
-        
-    </>) 
-  };
+    </>)
 };
 
 export default App;
